@@ -5,20 +5,35 @@ export const TOKEN_COOKIE_KEY = "crm_access_token";
 export const USER_COOKIE_KEY = "crm_user_profile";
 
 export function getApiBaseUrl(): string {
-  let base =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1/crm";
-  base = base.trim().replace(/\/+$/, "");
-  // If the page was loaded over HTTPS (such as on Vercel), upgrade remote API URLs to HTTPS to avoid Mixed Content browser blocks
-  if (
-    typeof window !== "undefined" &&
-    window.location.protocol === "https:" &&
-    base.startsWith("http://") &&
-    !base.includes("localhost") &&
-    !base.includes("127.0.0.1")
-  ) {
-    base = base.replace(/^http:\/\//, "https://");
+  let base = (process.env.NEXT_PUBLIC_API_BASE_URL || "").trim().replace(/\/+$/, "");
+
+  // Client-side detection: when running on a hosted domain (e.g. Vercel)
+  if (typeof window !== "undefined") {
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
+    // If deployed on Vercel/cloud, but env var is missing or defaulted to localhost, route to Render production backend
+    if (!isLocalhost && (!base || base.includes("localhost") || base.includes("127.0.0.1"))) {
+      base = "https://king-qobf.onrender.com/api/v1/crm";
+    }
+
+    // Upgrade http:// to https:// on secure HTTPS pages to prevent browser Mixed Content blocks
+    if (
+      window.location.protocol === "https:" &&
+      base.startsWith("http://") &&
+      !base.includes("localhost") &&
+      !base.includes("127.0.0.1")
+    ) {
+      base = base.replace(/^http:\/\//, "https://");
+    }
   }
-  return base;
+
+  if (!base) {
+    base = "http://localhost:8000/api/v1/crm";
+  }
+
+  return base.replace(/\/+$/, "");
 }
 
 export class ApiError extends Error {

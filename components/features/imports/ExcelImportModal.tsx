@@ -83,7 +83,7 @@ export function ExcelImportModal({
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to download template");
+        if (!res.ok) throw new Error(`Download failed with status ${res.status}`);
         return res.blob();
       })
       .then((blob) => {
@@ -98,7 +98,14 @@ export function ExcelImportModal({
         toast.success("Sample template downloaded");
       })
       .catch((err) => {
-        toast.error(err.message || "Failed to download template");
+        const msg = err?.message || "Failed to download template";
+        if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+          toast.error(
+            "Unable to download template: backend server unreachable or waking up. Please retry in a few seconds."
+          );
+        } else {
+          toast.error(msg);
+        }
       });
   };
 
@@ -123,9 +130,23 @@ export function ExcelImportModal({
         body: formData,
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
       if (!res.ok) {
-        throw new Error(json.detail || json.message || "Failed to parse spreadsheet");
+        const errorMsg =
+          json?.error?.message ||
+          json?.detail ||
+          json?.message ||
+          (res.status === 401
+            ? "Session expired. Please sign in again."
+            : `Server returned error (${res.status}).`);
+        throw new Error(errorMsg);
       }
 
       const data: ImportPreviewData = json.data;
@@ -136,7 +157,14 @@ export function ExcelImportModal({
         `Detected ${data.detected_columns.length} columns and ${data.total_detected_rows} rows.`
       );
     } catch (err: any) {
-      toast.error(err.message || "Unable to read spreadsheet.");
+      const msg = err?.message || "Unable to read spreadsheet.";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        toast.error(
+          "Connection issue: Unable to reach backend server. If using Render free tier, the server may take up to 40 seconds to wake up. Please retry momentarily."
+        );
+      } else {
+        toast.error(msg);
+      }
       setSelectedFile(null);
     } finally {
       setIsAnalyzing(false);
@@ -179,9 +207,23 @@ export function ExcelImportModal({
         body: formData,
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
       if (!res.ok) {
-        throw new Error(json.detail || json.message || "Import execution failed");
+        const errorMsg =
+          json?.error?.message ||
+          json?.detail ||
+          json?.message ||
+          (res.status === 401
+            ? "Session expired. Please sign in again."
+            : `Import execution failed (${res.status}).`);
+        throw new Error(errorMsg);
       }
 
       const result: ImportExecuteResult = json.data;
@@ -201,7 +243,14 @@ export function ExcelImportModal({
         `Import complete: ${result.imported_count} records imported into CRM!`
       );
     } catch (err: any) {
-      toast.error(err.message || "Failed to execute import.");
+      const msg = err?.message || "Failed to execute import.";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        toast.error(
+          "Connection issue: Unable to reach backend server. Please verify your connection or retry in a moment."
+        );
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsExecuting(false);
     }
