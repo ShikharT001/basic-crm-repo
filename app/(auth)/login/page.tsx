@@ -33,7 +33,6 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -61,11 +60,6 @@ function LoginForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const fillSuperAdmin = () => {
-    setValue("email", "superadmin@crmplatform.com");
-    setValue("password", "SuperAdmin@CRM2026!");
   };
 
   return (
@@ -127,30 +121,6 @@ function LoginForm() {
             Sign In to CRM
           </Button>
         </form>
-
-        {/* Quick Credential Helper */}
-        <div className="mt-6 pt-5 border-t border-border/80">
-          <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground mb-2">
-            <span>SEED CREDENTIALS</span>
-            <button
-              type="button"
-              onClick={fillSuperAdmin}
-              className="text-accent hover:underline"
-            >
-              Auto-fill Super Admin
-            </button>
-          </div>
-          <div className="p-2.5 rounded-[2px] bg-muted/30 border border-border text-[11px] font-mono text-muted-foreground space-y-1">
-            <div>
-              Super Admin:{" "}
-              <span className="text-foreground">superadmin@crmplatform.com</span>
-            </div>
-            <div>
-              Password:{" "}
-              <span className="text-foreground">SuperAdmin@CRM2026!</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
