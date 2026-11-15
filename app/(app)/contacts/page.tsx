@@ -10,7 +10,8 @@ import { Pagination } from "@/components/ui/Pagination";
 import { ContactDrawer } from "@/components/features/contacts/ContactDrawer";
 import { formatDate } from "@/lib/utils";
 import { Contact } from "@/types/crm";
-import { Plus, Search, Mail, Phone, Building } from "lucide-react";
+import { Plus, Search, Mail, Phone, Building, UploadCloud } from "lucide-react";
+import { ExcelImportModal } from "@/components/features/imports/ExcelImportModal";
 
 export default function ContactsPage() {
   const [page, setPage] = useState(1);
@@ -21,6 +22,7 @@ export default function ContactsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [defaultEditing, setDefaultEditing] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -107,18 +109,28 @@ export default function ContactsPage() {
         title="Contacts Directory"
         description="Address book of clients, accounts, and stakeholders across your commercial network."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              setSelectedContact(null);
-              setDefaultEditing(true);
-              setDrawerOpen(true);
-            }}
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Add Contact
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportModalOpen(true)}
+            >
+              <UploadCloud className="h-3.5 w-3.5 mr-1 text-accent" />
+              Import Excel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setSelectedContact(null);
+                setDefaultEditing(true);
+                setDrawerOpen(true);
+              }}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Add Contact
+            </Button>
+          </div>
         }
       />
 
@@ -175,6 +187,13 @@ export default function ContactsPage() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         defaultEditing={defaultEditing}
+      />
+
+      <ExcelImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        entityType="CONTACTS"
+        title="Import Contacts from Spreadsheet"
       />
     </div>
   );

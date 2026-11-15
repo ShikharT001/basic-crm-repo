@@ -268,3 +268,39 @@ export type ContactUpdate = Partial<Contact>;
 export type TransactionCreate = Partial<Transaction>;
 export type OrgUserCreate = Partial<OrgUser>;
 
+export interface CRMFieldDefinition {
+  field: string;
+  label: string;
+  description: string;
+  type: string;
+  required: boolean;
+}
+
+export interface ImportPreviewData {
+  filename: string;
+  entity_type: "LEADS" | "CONTACTS";
+  total_detected_rows: number;
+  detected_columns: string[];
+  sample_rows: Record<string, any>[];
+  suggested_mapping: Record<string, string>;
+  available_crm_fields: CRMFieldDefinition[];
+}
+
+export interface RowErrorDetail {
+  row_number: number;
+  reason: string;
+  raw_data?: Record<string, any>;
+}
+
+export interface ImportExecuteResult {
+  job_id: string;
+  filename: string;
+  entity_type: "LEADS" | "CONTACTS";
+  total_rows: number;
+  imported_count: number;
+  skipped_count: number;
+  errors: RowErrorDetail[];
+  created_at: string;
+}
+
+

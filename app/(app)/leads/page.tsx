@@ -15,7 +15,8 @@ import { ConvertToDealDialog } from "@/components/features/leads/ConvertToDealDi
 import { LeadsKanban } from "@/components/features/leads/LeadsKanban";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Lead, LeadPriority, LeadSource, LeadStatus } from "@/types/crm";
-import { LayoutGrid, List, Plus, Search, Trash2, ArrowRightLeft } from "lucide-react";
+import { LayoutGrid, List, Plus, Search, Trash2, ArrowRightLeft, UploadCloud } from "lucide-react";
+import { ExcelImportModal } from "@/components/features/imports/ExcelImportModal";
 
 export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
@@ -35,6 +36,7 @@ export default function LeadsPage() {
   const [leadToConvert, setLeadToConvert] = useState<Lead | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   // Debounce search input by 350ms
   useEffect(() => {
@@ -186,6 +188,15 @@ export default function LeadsPage() {
             </div>
 
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportModalOpen(true)}
+            >
+              <UploadCloud className="h-3.5 w-3.5 mr-1 text-accent" />
+              Import Excel
+            </Button>
+
+            <Button
               variant="primary"
               size="sm"
               onClick={() => {
@@ -326,6 +337,13 @@ export default function LeadsPage() {
             setDeleteConfirmOpen(false);
           }
         }}
+      />
+
+      <ExcelImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        entityType="LEADS"
+        title="Import Leads from Spreadsheet"
       />
     </div>
   );
