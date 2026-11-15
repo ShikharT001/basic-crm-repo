@@ -4,8 +4,22 @@ import { PaginationMeta, ResponseEnvelope } from "@/types/crm";
 export const TOKEN_COOKIE_KEY = "crm_access_token";
 export const USER_COOKIE_KEY = "crm_user_profile";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1/crm";
+export function getApiBaseUrl(): string {
+  let base =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1/crm";
+  base = base.trim().replace(/\/+$/, "");
+  // If the page was loaded over HTTPS (such as on Vercel), upgrade remote API URLs to HTTPS to avoid Mixed Content browser blocks
+  if (
+    typeof window !== "undefined" &&
+    window.location.protocol === "https:" &&
+    base.startsWith("http://") &&
+    !base.includes("localhost") &&
+    !base.includes("127.0.0.1")
+  ) {
+    base = base.replace(/^http:\/\//, "https://");
+  }
+  return base;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -35,7 +49,8 @@ export async function apiClient<T>(
 ): Promise<ApiResponse<T>> {
   const { params, headers, ...restOptions } = options;
 
-  let url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  const baseUrl = getApiBaseUrl();
+  let url = `${baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
 
   if (params) {
     const searchParams = new URLSearchParams();
